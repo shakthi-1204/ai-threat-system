@@ -2,12 +2,14 @@ import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 
+# Create dataset
 data = pd.DataFrame({
     "packets": np.random.randint(10, 100, 500),
     "bytes": np.random.randint(100, 1200, 500),
     "duration": np.random.randint(1, 10, 500)
 })
 
+# Label attack types
 def label_attack(row):
     if row["packets"] > 80:
         return "Flood Attack"
