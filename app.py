@@ -7,15 +7,29 @@ from utils import speak_alert
 
 st.set_page_config(layout="wide")
 
+# -------- STYLE --------
 st.markdown("""
 <style>
 body { background-color: #0e1117; color: white; }
-.card { background-color: #1c1f26; padding: 20px; border-radius: 12px; text-align: center; }
-.alert { animation: blink 1s infinite; color: red; font-size: 24px; }
-@keyframes blink { 50% { opacity: 0; } }
+.card {
+    background-color: #1c1f26;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+}
+.alert {
+    animation: blink 1s infinite;
+    color: red;
+    font-size: 24px;
+    font-weight: bold;
+}
+@keyframes blink {
+    50% { opacity: 0; }
+}
 </style>
 """, unsafe_allow_html=True)
 
+# -------- SIDEBAR --------
 st.sidebar.title("🛡️ Control Panel")
 menu = st.sidebar.radio("Navigation", ["Dashboard", "Live Monitoring", "Prediction", "Analysis"])
 
@@ -23,6 +37,7 @@ st.title("🛡️ AI Threat Intelligence System")
 
 run = st.toggle("▶ Start Live Detection")
 
+# -------- DASHBOARD --------
 if menu == "Dashboard":
     placeholder = st.empty()
 
@@ -48,19 +63,40 @@ if menu == "Dashboard":
                 })
                 st.line_chart(chart_data)
 
+                st.subheader("🌐 Network Map")
+                nodes = ["User", "Server", "Firewall", "Database"]
+                for _ in range(5):
+                    st.write(f"{random.choice(nodes)} ➝ {random.choice(nodes)}")
+
                 if attack != "Normal":
                     st.markdown(f'<div class="alert">🚨 {attack} DETECTED!</div>', unsafe_allow_html=True)
+                    st.warning("🔊 Voice alert (only works in local system)")
                     speak_alert(attack)
                 else:
                     st.success("✅ System Safe")
 
             time.sleep(2)
 
+# -------- LIVE MONITORING --------
 elif menu == "Live Monitoring":
-    st.write("Logs loading...")
+    st.subheader("📡 Live Logs")
+    for i in range(10):
+        st.write(f"Log {i}: {random.randint(10,100)} packets")
 
+# -------- PREDICTION --------
 elif menu == "Prediction":
-    st.write("Future risk coming soon...")
+    st.subheader("🔮 Future Threat Prediction")
+    future = random.randint(50, 95)
+    st.write(f"Predicted Risk: {future}%")
 
+    if future > 75:
+        st.warning("⚠️ High probability of attack soon")
+
+# -------- ANALYSIS --------
 elif menu == "Analysis":
-    st.write("AI explains threats...")
+    st.subheader("🧠 AI Explanation")
+    st.write("""
+    - High packets → Flood attack  
+    - High bytes → Data exfiltration  
+    - Short bursts → DoS attack  
+    """)
