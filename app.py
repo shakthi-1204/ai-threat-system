@@ -2,10 +2,19 @@ import streamlit as st
 import random
 import time
 import pandas as pd
+import streamlit.components.v1 as components
 from model import predict
-from utils import speak_alert
 
 st.set_page_config(layout="wide")
+
+# 🔊 Voice function (WORKS ONLINE + MOBILE)
+def speak(text):
+    components.html(f"""
+        <script>
+        var msg = new SpeechSynthesisUtterance("{text}");
+        window.speechSynthesis.speak(msg);
+        </script>
+    """)
 
 # -------- STYLE --------
 st.markdown("""
@@ -68,10 +77,10 @@ if menu == "Dashboard":
                 for _ in range(5):
                     st.write(f"{random.choice(nodes)} ➝ {random.choice(nodes)}")
 
+                # 🔥 ATTACK DETECTION WITH VOICE
                 if attack != "Normal":
                     st.markdown(f'<div class="alert">🚨 {attack} DETECTED!</div>', unsafe_allow_html=True)
-                    st.warning("🔊 Voice alert (only works in local system)")
-                    speak_alert(attack)
+                    speak("Warning! " + attack + " detected")
                 else:
                     st.success("✅ System Safe")
 
