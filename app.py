@@ -52,9 +52,19 @@ if menu == "Dashboard":
 
     if run:
         while True:
-            packets = random.randint(10, 100)
-            bytes_data = random.randint(100, 1200)
-            duration = random.randint(1, 10)
+            # 🚨 Simulate attack button
+force_attack = st.button("🚨 Simulate Attack")
+
+if force_attack:
+    # Force dangerous values (guaranteed attack)
+    packets = 95
+    bytes_data = 1100
+    duration = 2
+else:
+    # Normal random data
+    packets = random.randint(10, 100)
+    bytes_data = random.randint(100, 1200)
+    duration = random.randint(1, 10)
 
             attack, risk = predict(packets, bytes_data, duration)
 
