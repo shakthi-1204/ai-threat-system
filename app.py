@@ -1,119 +1,64 @@
 import streamlit as st
 import random
 import time
-import pandas as pd
-import streamlit.components.v1 as components
-from model import predict
 
-st.set_page_config(layout="wide")
+# -------- PAGE CONFIG --------
+st.set_page_config(page_title="AI Threat Detection", layout="centered")
 
-# 🔊 Voice function (WORKS ONLINE + MOBILE)
-def speak(text):
-    components.html(f"""
-        <script>
-        var msg = new SpeechSynthesisUtterance("{text}");
-        window.speechSynthesis.speak(msg);
-        </script>
-    """)
+st.title("🚀 AI Threat Intelligence System")
 
-# -------- STYLE --------
-st.markdown("""
-<style>
-body { background-color: #0e1117; color: white; }
-.card {
-    background-color: #1c1f26;
-    padding: 20px;
-    border-radius: 12px;
-    text-align: center;
-}
-.alert {
-    animation: blink 1s infinite;
-    color: red;
-    font-size: 24px;
-    font-weight: bold;
-}
-@keyframes blink {
-    50% { opacity: 0; }
-}
-</style>
-""", unsafe_allow_html=True)
+# -------- SESSION STATE --------
+if "attack" not in st.session_state:
+    st.session_state.attack = False
 
-# -------- SIDEBAR --------
-st.sidebar.title("🛡️ Control Panel")
-menu = st.sidebar.radio("Navigation", ["Dashboard", "Live Monitoring", "Prediction", "Analysis"])
+if "running" not in st.session_state:
+    st.session_state.running = False
 
-st.title("🛡️ AI Threat Intelligence System")
+# -------- BUTTONS --------
+col1, col2 = st.columns(2)
 
-run = st.toggle("▶ Start Live Detection")
+with col1:
+    if st.button("▶️ Start Monitoring"):
+        st.session_state.running = True
 
-# -------- DASHBOARD --------
-if menu == "Dashboard":
-    placeholder = st.empty()
+with col2:
+    if st.button("🚨 Simulate Attack"):
+        st.session_state.attack = True
 
-    if run:
-        while True:
-            # 🚨 Simulate attack button
-            force_attack = st.button("🚨 Simulate Attack")
+# -------- STATUS DISPLAY --------
+status_box = st.empty()
 
-            if force_attack:
-                packets = 95
-                bytes_data = 1100
-                duration = 2
-            else:
-                packets = random.randint(10, 100)
-                bytes_data = random.randint(100, 1200)
-                duration = random.randint(1, 10)
+# -------- MAIN LOGIC --------
+if st.session_state.running:
 
-            attack, risk = predict(packets, bytes_data, duration)
+    for i in range(10):  # loop limited to avoid crash
 
-            with placeholder.container():
-                col1, col2, col3, col4 = st.columns(4)
+        packets = random.randint(20, 100)
+        bytes_data = random.randint(200, 1200)
+        duration = random.randint(1, 10)
 
-                col1.markdown(f'<div class="card">Attack<br><h2>{attack}</h2></div>', unsafe_allow_html=True)
-                col2.markdown(f'<div class="card">Risk %<br><h2>{risk}</h2></div>', unsafe_allow_html=True)
-                col3.markdown(f'<div class="card">Packets<br><h2>{packets}</h2></div>', unsafe_allow_html=True)
-                col4.markdown(f'<div class="card">Bytes<br><h2>{bytes_data}</h2></div>', unsafe_allow_html=True)
+        # -------- NORMAL FIRST --------
+        if i < 3:
+            attack_type = "Normal"
+            confidence = 10
 
-                chart_data = pd.DataFrame({
-                    "Packets": [random.randint(10,100) for _ in range(30)],
-                    "Bytes": [random.randint(100,1200) for _ in range(30)]
-                })
-                st.line_chart(chart_data)
+        # -------- SIMULATED ATTACK --------
+        elif st.session_state.attack:
+            attack_type = random.choice(["Flood Attack", "DoS Attack", "DDoS Attack"])
+            confidence = random.randint(80, 99)
 
-                st.subheader("🌐 Network Map")
-                nodes = ["User", "Server", "Firewall", "Database"]
-                for _ in range(5):
-                    st.write(f"{random.choice(nodes)} ➝ {random.choice(nodes)}")
+        # -------- NORMAL RANDOM --------
+        else:
+            attack_type = "Normal"
+            confidence = random.randint(10, 30)
 
-                # 🔥 ATTACK DETECTION WITH VOICE
-                if attack != "Normal":
-                    st.markdown(f'<div class="alert">🚨 {attack} DETECTED!</div>', unsafe_allow_html=True)
-                    speak("Warning! " + attack + " detected")
-                else:
-                    st.success("✅ System Safe")
+        # -------- DISPLAY --------
+        if attack_type == "Normal":
+            status_box.success(f"✅ Packet {i+1}: NORMAL")
+        else:
+            status_box.error(f"🚨 Packet {i+1}: {attack_type} DETECTED | Risk: {confidence}%")
 
-            time.sleep(2)
+        time.sleep(1)
 
-# -------- LIVE MONITORING --------
-elif menu == "Live Monitoring":
-    st.subheader("📡 Live Logs")
-    for i in range(10):
-        st.write(f"Log {i}: {random.randint(10,100)} packets")
-
-# -------- PREDICTION --------
-elif menu == "Prediction":
-    st.subheader("🔮 Future Threat Prediction")
-    future = random.randint(50, 95)
-    st.write(f"Predicted Risk: {future}%")
-
-    if future > 75:
-        st.warning("⚠️ High probability of attack soon")
-
-# -------- ANALYSIS --------
-elif menu == "Analysis":
-    st.subheader("🧠 AI Explanation")
-    st.write("""
-    - High packets → Flood attack  
-    - High bytes → Data exfiltration  
-    - Short bursts → DoS attack  
-    """)
+    # Reset attack after showing once
+    st.session_state.attack = False
