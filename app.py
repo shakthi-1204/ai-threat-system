@@ -1,5 +1,5 @@
 import streamlit as st
-import streamlit.components.v1 as components   # ✅ ADD THIS
+import streamlit.components.v1 as components
 import random
 import time
 import pandas as pd
@@ -59,6 +59,10 @@ if "run" not in st.session_state:
 if "attack" not in st.session_state:
     st.session_state.attack = False
 
+# 🔊 Track voice trigger
+if "voice_played" not in st.session_state:
+    st.session_state.voice_played = False
+
 # -------- BUTTONS --------
 colA, colB = st.columns(2)
 
@@ -69,6 +73,7 @@ with colA:
 with colB:
     if st.button("🚨 Simulate Attack"):
         st.session_state.attack = True
+        st.session_state.voice_played = False   # reset voice for new attack
 
 # -------- DASHBOARD --------
 if menu == "Dashboard":
@@ -110,24 +115,30 @@ if menu == "Dashboard":
                 col3.markdown(f'<div class="card"><h4>Packets</h4><h2>{packets}</h2></div>', unsafe_allow_html=True)
                 col4.markdown(f'<div class="card"><h4>Bytes</h4><h2>{bytes_data}</h2></div>', unsafe_allow_html=True)
 
-                # GRAPH
+                # -------- GRAPH --------
                 chart_data = pd.DataFrame({
                     "Packets": [random.randint(10,100) for _ in range(30)],
                     "Bytes": [random.randint(100,1200) for _ in range(30)]
                 })
                 st.line_chart(chart_data)
 
-                # ALERT + VOICE
+                # -------- ALERT + VOICE --------
                 if attack != "Normal":
                     st.markdown(f'<div class="alert">🚨 {attack} DETECTED!</div>', unsafe_allow_html=True)
-                    speak(f"{attack} detected")   # ✅ FIXED
+
+                    # 🔊 Speak ONLY ONCE
+                    if not st.session_state.voice_played:
+                        speak(f"{attack} detected")
+                        st.session_state.voice_played = True
 
                 else:
                     st.success("✅ System Safe")
 
             time.sleep(1)
 
+        # reset states
         st.session_state.attack = False
+        st.session_state.voice_played = False
 
 # -------- LIVE MONITORING --------
 elif menu == "Live Monitoring":
