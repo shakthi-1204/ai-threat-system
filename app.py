@@ -107,15 +107,16 @@ if menu == "Dashboard":
                 })
                 st.line_chart(chart_data)
 
-                # ALERT + SOUND
+                # ALERT + VOICE
                 if attack != "Normal":
                     st.markdown(f'<div class="alert">🚨 {attack} DETECTED!</div>', unsafe_allow_html=True)
 
-                    # 🔊 AUTO SOUND FIX
-                    st.markdown("""
-                    <audio autoplay>
-                      <source src="https://www.soundjay.com/misc/sounds/alarm-clock-01.mp3" type="audio/mpeg">
-                    </audio>
+                    # 🔊 VOICE ALERT (TEXT TO SPEECH)
+                    st.markdown(f"""
+                    <script>
+                    var msg = new SpeechSynthesisUtterance("{attack} detected");
+                    window.speechSynthesis.speak(msg);
+                    </script>
                     """, unsafe_allow_html=True)
 
                 else:
