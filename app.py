@@ -1,64 +1,79 @@
 import streamlit as st
 import random
 import time
+import pandas as pd
 
-# -------- PAGE CONFIG --------
-st.set_page_config(page_title="AI Threat Detection", layout="centered")
+st.set_page_config(layout="wide")
 
 st.title("🚀 AI Threat Intelligence System")
 
 # -------- SESSION STATE --------
+if "run" not in st.session_state:
+    st.session_state.run = False
+
 if "attack" not in st.session_state:
     st.session_state.attack = False
 
-if "running" not in st.session_state:
-    st.session_state.running = False
-
-# -------- BUTTONS --------
+# -------- BUTTONS (OUTSIDE LOOP) --------
 col1, col2 = st.columns(2)
 
 with col1:
     if st.button("▶️ Start Monitoring"):
-        st.session_state.running = True
+        st.session_state.run = True
 
 with col2:
     if st.button("🚨 Simulate Attack"):
         st.session_state.attack = True
 
-# -------- STATUS DISPLAY --------
-status_box = st.empty()
+# -------- DASHBOARD --------
+if st.session_state.run:
 
-# -------- MAIN LOGIC --------
-if st.session_state.running:
+    placeholder = st.empty()
 
-    for i in range(10):  # loop limited to avoid crash
+    for i in range(20):   # limited loop (avoid crash)
 
-        packets = random.randint(20, 100)
-        bytes_data = random.randint(200, 1200)
+        packets = random.randint(10, 100)
+        bytes_data = random.randint(100, 1200)
         duration = random.randint(1, 10)
 
         # -------- NORMAL FIRST --------
         if i < 3:
-            attack_type = "Normal"
-            confidence = 10
+            attack = "Normal"
+            risk = random.randint(5, 20)
 
-        # -------- SIMULATED ATTACK --------
+        # -------- ATTACK --------
         elif st.session_state.attack:
-            attack_type = random.choice(["Flood Attack", "DoS Attack", "DDoS Attack"])
-            confidence = random.randint(80, 99)
+            attack = random.choice(["Flood Attack", "DoS Attack", "DDoS Attack"])
+            risk = random.randint(75, 99)
 
-        # -------- NORMAL RANDOM --------
+        # -------- NORMAL --------
         else:
-            attack_type = "Normal"
-            confidence = random.randint(10, 30)
+            attack = "Normal"
+            risk = random.randint(10, 40)
 
-        # -------- DISPLAY --------
-        if attack_type == "Normal":
-            status_box.success(f"✅ Packet {i+1}: NORMAL")
-        else:
-            status_box.error(f"🚨 Packet {i+1}: {attack_type} DETECTED | Risk: {confidence}%")
+        with placeholder.container():
+
+            col1, col2, col3, col4 = st.columns(4)
+
+            col1.metric("Attack", attack)
+            col2.metric("Risk %", risk)
+            col3.metric("Packets", packets)
+            col4.metric("Bytes", bytes_data)
+
+            # -------- GRAPH --------
+            chart_data = pd.DataFrame({
+                "Packets": [random.randint(10,100) for _ in range(20)],
+                "Bytes": [random.randint(100,1200) for _ in range(20)]
+            })
+            st.line_chart(chart_data)
+
+            # -------- ALERT --------
+            if attack != "Normal":
+                st.error(f"🚨 {attack} DETECTED!")
+            else:
+                st.success("✅ System Safe")
 
         time.sleep(1)
 
-    # Reset attack after showing once
+    # reset attack after one cycle
     st.session_state.attack = False
