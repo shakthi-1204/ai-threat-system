@@ -2,7 +2,7 @@ import streamlit as st
 import random
 import time
 import pandas as pd
-from model import predict  # your ML model
+from model import predict
 
 st.set_page_config(layout="wide")
 
@@ -40,7 +40,7 @@ body { background-color: #0e1117; color: white; }
 st.sidebar.title("🛡️ Control Panel")
 menu = st.sidebar.radio("Navigation", ["Dashboard", "Live Monitoring", "Prediction", "Analysis"])
 
-st.title("                 🚀 AI Threat Intelligence System                    ")
+st.title("🚀 AI Threat Intelligence System")
 
 # -------- SESSION STATE --------
 if "run" not in st.session_state:
@@ -73,17 +73,17 @@ if menu == "Dashboard":
             bytes_data = random.randint(100, 1200)
             duration = random.randint(1, 10)
 
-            # -------- NORMAL FIRST --------
+            # NORMAL FIRST
             if i < 3:
                 attack = "Normal"
                 risk = random.randint(5, 20)
 
-            # -------- SIMULATED ATTACK --------
+            # SIMULATED ATTACK
             elif st.session_state.attack:
                 attack = random.choice(["Flood Attack", "DoS Attack", "DDoS Attack"])
                 risk = random.randint(80, 99)
 
-            # -------- REAL AI PREDICTION --------
+            # AI PREDICTION
             else:
                 try:
                     attack, risk = predict(packets, bytes_data, duration)
@@ -100,19 +100,23 @@ if menu == "Dashboard":
                 col3.markdown(f'<div class="card"><h4>Packets</h4><h2>{packets}</h2></div>', unsafe_allow_html=True)
                 col4.markdown(f'<div class="card"><h4>Bytes</h4><h2>{bytes_data}</h2></div>', unsafe_allow_html=True)
 
-                # -------- LIVE GRAPH --------
+                # GRAPH
                 chart_data = pd.DataFrame({
                     "Packets": [random.randint(10,100) for _ in range(30)],
                     "Bytes": [random.randint(100,1200) for _ in range(30)]
                 })
                 st.line_chart(chart_data)
 
-                # -------- ALERT --------
+                # ALERT + SOUND
                 if attack != "Normal":
                     st.markdown(f'<div class="alert">🚨 {attack} DETECTED!</div>', unsafe_allow_html=True)
 
-                    # 🔊 VOICE ALERT (BROWSER)
-                    st.audio("https://www.soundjay.com/buttons/sounds/beep-07.mp3")
+                    # 🔊 AUTO SOUND FIX
+                    st.markdown("""
+                    <audio autoplay>
+                      <source src="https://www.soundjay.com/misc/sounds/alarm-clock-01.mp3" type="audio/mpeg">
+                    </audio>
+                    """, unsafe_allow_html=True)
 
                 else:
                     st.success("✅ System Safe")
