@@ -3,7 +3,6 @@ import streamlit.components.v1 as components
 import random
 import time
 import pandas as pd
-from model import predict
 
 st.set_page_config(layout="wide")
 
@@ -59,7 +58,6 @@ if "run" not in st.session_state:
 if "attack" not in st.session_state:
     st.session_state.attack = False
 
-# 🔊 Track voice trigger
 if "voice_played" not in st.session_state:
     st.session_state.voice_played = False
 
@@ -73,7 +71,7 @@ with colA:
 with colB:
     if st.button("🚨 Simulate Attack"):
         st.session_state.attack = True
-        st.session_state.voice_played = False   # reset voice for new attack
+        st.session_state.voice_played = False  # reset voice
 
 # -------- DASHBOARD --------
 if menu == "Dashboard":
@@ -86,25 +84,16 @@ if menu == "Dashboard":
 
             packets = random.randint(10, 100)
             bytes_data = random.randint(100, 1200)
-            duration = random.randint(1, 10)
 
-            # NORMAL FIRST
-            if i < 3:
+            # ✅ BEFORE SIMULATION → ALWAYS NORMAL
+            if not st.session_state.attack:
                 attack = "Normal"
-                risk = random.randint(5, 20)
+                risk = random.randint(5, 25)
 
-            # SIMULATED ATTACK
-            elif st.session_state.attack:
+            # ✅ AFTER SIMULATION → ATTACK
+            else:
                 attack = random.choice(["Flood Attack", "DoS Attack", "DDoS Attack"])
                 risk = random.randint(80, 99)
-
-            # AI PREDICTION
-            else:
-                try:
-                    attack, risk = predict(packets, bytes_data, duration)
-                except:
-                    attack = "Normal"
-                    risk = random.randint(10, 40)
 
             with placeholder.container():
 
@@ -126,7 +115,6 @@ if menu == "Dashboard":
                 if attack != "Normal":
                     st.markdown(f'<div class="alert">🚨 {attack} DETECTED!</div>', unsafe_allow_html=True)
 
-                    # 🔊 Speak ONLY ONCE
                     if not st.session_state.voice_played:
                         speak(f"{attack} detected")
                         st.session_state.voice_played = True
@@ -136,7 +124,7 @@ if menu == "Dashboard":
 
             time.sleep(1)
 
-        # reset states
+        # reset after loop
         st.session_state.attack = False
         st.session_state.voice_played = False
 
