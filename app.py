@@ -38,10 +38,6 @@ body { background-color: #0e1117; color: white; }
     font-size: 24px;
     font-weight: bold;
 }
-
-@keyframes blink {
-    50% { opacity: 0; }
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -61,6 +57,9 @@ if "attack" not in st.session_state:
 if "voice_played" not in st.session_state:
     st.session_state.voice_played = False
 
+if "current_attack" not in st.session_state:
+    st.session_state.current_attack = None
+
 # -------- BUTTONS --------
 colA, colB = st.columns(2)
 
@@ -71,7 +70,8 @@ with colA:
 with colB:
     if st.button("🚨 Simulate Attack"):
         st.session_state.attack = True
-        st.session_state.voice_played = False  # reset voice
+        st.session_state.voice_played = False
+        st.session_state.current_attack = random.choice(["Flood Attack", "DoS Attack", "DDoS Attack"])
 
 # -------- DASHBOARD --------
 if menu == "Dashboard":
@@ -85,21 +85,27 @@ if menu == "Dashboard":
             packets = random.randint(10, 100)
             bytes_data = random.randint(100, 1200)
 
-            # ✅ BEFORE SIMULATION → ALWAYS NORMAL
+            # -------- REALISTIC FLOW --------
             if not st.session_state.attack:
                 attack = "Normal"
-                risk = random.randint(5, 25)
+                risk = random.randint(5, 20)
 
-            # ✅ AFTER SIMULATION → ATTACK
             else:
-                attack = random.choice(["Flood Attack", "DoS Attack", "DDoS Attack"])
-                risk = random.randint(80, 99)
+                # Stage 1: Suspicious activity
+                if i < 5:
+                    attack = "Suspicious Activity"
+                    risk = random.randint(40, 60)
+
+                # Stage 2: Attack begins
+                else:
+                    attack = st.session_state.current_attack
+                    risk = random.randint(80, 99)
 
             with placeholder.container():
 
                 col1, col2, col3, col4 = st.columns(4)
 
-                col1.markdown(f'<div class="card"><h4>Attack</h4><h2>{attack}</h2></div>', unsafe_allow_html=True)
+                col1.markdown(f'<div class="card"><h4>Status</h4><h2>{attack}</h2></div>', unsafe_allow_html=True)
                 col2.markdown(f'<div class="card"><h4>Risk %</h4><h2>{risk}</h2></div>', unsafe_allow_html=True)
                 col3.markdown(f'<div class="card"><h4>Packets</h4><h2>{packets}</h2></div>', unsafe_allow_html=True)
                 col4.markdown(f'<div class="card"><h4>Bytes</h4><h2>{bytes_data}</h2></div>', unsafe_allow_html=True)
@@ -111,22 +117,26 @@ if menu == "Dashboard":
                 })
                 st.line_chart(chart_data)
 
-                # -------- ALERT + VOICE --------
-                if attack != "Normal":
+                # -------- ALERT --------
+                if attack not in ["Normal", "Suspicious Activity"]:
                     st.markdown(f'<div class="alert">🚨 {attack} DETECTED!</div>', unsafe_allow_html=True)
 
                     if not st.session_state.voice_played:
                         speak(f"{attack} detected")
                         st.session_state.voice_played = True
 
+                elif attack == "Suspicious Activity":
+                    st.warning("⚠️ Suspicious activity detected... monitoring closely")
+
                 else:
                     st.success("✅ System Safe")
 
             time.sleep(1)
 
-        # reset after loop
+        # reset
         st.session_state.attack = False
         st.session_state.voice_played = False
+        st.session_state.current_attack = None
 
 # -------- LIVE MONITORING --------
 elif menu == "Live Monitoring":
@@ -147,7 +157,7 @@ elif menu == "Prediction":
 elif menu == "Analysis":
     st.subheader("🧠 AI Explanation")
     st.write("""
-    - High packets → Flood attack  
-    - High bytes → Data exfiltration  
-    - Short bursts → DoS attack  
+    - Low traffic → Normal  
+    - Medium anomalies → Suspicious  
+    - High traffic spike → DoS / DDoS / Flood  
     """)
